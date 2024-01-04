@@ -1,50 +1,14 @@
+#include "rotating_cube.h"
+#include "gfutils.h"
 #include <math.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #if defined(_WIN32)
-// #include <Windows.h>
-// #else
-// #include <sys/ioctl.h>
-// #include <time.h>
-// #include <unistd.h>
-// #endif
-#include "gfutils.h"
-#include "rotating_cube.h"
+#include <time.h>
 
 Context ctx;
-
-float calc_x(vec3 v, rot3 r) {
-    return v.x * (cosf(r.a) * cosf(r.b)) + v.y * (cosf(r.a) * sinf(r.b) * sinf(r.c) - sinf(r.a) * cosf(r.c)) +
-           v.z * (sinf(r.a) * sinf(r.c) + cosf(r.a) * sinf(r.b) * cosf(r.c));
-}
-
-float calc_y(vec3 v, rot3 r) {
-    return v.x * (sinf(r.a) * cosf(r.b)) + v.y * (cosf(r.a) * cosf(r.c) + sinf(r.a) * sinf(r.b) * sinf(r.c)) +
-           v.z * (sinf(r.a) * sinf(r.b) * cosf(r.c) - cosf(r.a) * sinf(r.c));
-}
-
-float calc_z(vec3 v, rot3 r) {
-    return v.x * (-sinf(r.b)) + v.y * (cosf(r.b) * sinf(r.c)) + v.z * (cosf(r.b) * cosf(r.c));
-}
-
-void calculate_surface(Context *ctx, vec3 point, rot3 rot, char ch) {
-    const float x = calc_x(point, rot);
-    const float y = calc_y(point, rot);
-    const float z = calc_z(point, rot) + ctx->distance;
-    const float ooz = 1.0 / z;
-    const int col = (int)roundf(ctx->width / 2.0 + ctx->K1 * ooz * x * ctx->char_width);
-    const int row = (int)roundf(ctx->height / 2.0 + ctx->K1 * ooz * y * ctx->char_height);
-    const int k = col + row * ctx->width;
-    if (k >= 0 && k < ctx->width * ctx->height) {
-        if (ooz > ctx->z_buffer[k]) {
-            ctx->z_buffer[k] = ooz;
-            ctx->buffer[k] = ch;
-        }
-    }
-}
 
 void setup(Context *ctx) {
     get_terminal_size(&ctx->height, &ctx->width);
@@ -76,12 +40,12 @@ void update(Context *ctx) {
     memset(ctx->z_buffer, 0, ctx->width * ctx->height * sizeof(float));
     for (float cube_x = -ctx->cube_size; cube_x < ctx->cube_size; cube_x += ctx->inc) {
         for (float cube_y = -ctx->cube_size; cube_y < ctx->cube_size; cube_y += ctx->inc) {
-            calculate_surface(ctx, (vec3){cube_x, cube_y, -ctx->cube_size}, ctx->rot, '@');
-            calculate_surface(ctx, (vec3){cube_x, cube_y, ctx->cube_size}, ctx->rot, '#');
-            calculate_surface(ctx, (vec3){ctx->cube_size, cube_y, cube_x}, ctx->rot, 'X');
-            calculate_surface(ctx, (vec3){-ctx->cube_size, cube_y, cube_x}, ctx->rot, '~');
-            calculate_surface(ctx, (vec3){cube_x, -ctx->cube_size, cube_y}, ctx->rot, ';');
-            calculate_surface(ctx, (vec3){cube_x, ctx->cube_size, cube_y}, ctx->rot, '+');
+            calc_uv(ctx, (vec3){cube_x, cube_y, -ctx->cube_size}, ctx->rot, '@');
+            calc_uv(ctx, (vec3){cube_x, cube_y, ctx->cube_size}, ctx->rot, '#');
+            calc_uv(ctx, (vec3){ctx->cube_size, cube_y, cube_x}, ctx->rot, 'X');
+            calc_uv(ctx, (vec3){-ctx->cube_size, cube_y, cube_x}, ctx->rot, '~');
+            calc_uv(ctx, (vec3){cube_x, -ctx->cube_size, cube_y}, ctx->rot, ';');
+            calc_uv(ctx, (vec3){cube_x, ctx->cube_size, cube_y}, ctx->rot, '+');
         }
     }
     ctx->rot.a += 0.008;
@@ -111,7 +75,37 @@ void teardown(void) {
     ctx.z_buffer = NULL;
     /* Reset colors and cursor. */
     printf("\033[0m\033[?25h\n");
-    printf("\nFollow the white rabbit...\n");
+    printf("\nBye...\n");
+}
+
+float calc_x(vec3 v, rot3 r) {
+    return v.x * (cosf(r.a) * cosf(r.b)) + v.y * (cosf(r.a) * sinf(r.b) * sinf(r.c) - sinf(r.a) * cosf(r.c)) +
+           v.z * (sinf(r.a) * sinf(r.c) + cosf(r.a) * sinf(r.b) * cosf(r.c));
+}
+
+float calc_y(vec3 v, rot3 r) {
+    return v.x * (sinf(r.a) * cosf(r.b)) + v.y * (cosf(r.a) * cosf(r.c) + sinf(r.a) * sinf(r.b) * sinf(r.c)) +
+           v.z * (sinf(r.a) * sinf(r.b) * cosf(r.c) - cosf(r.a) * sinf(r.c));
+}
+
+float calc_z(vec3 v, rot3 r) {
+    return v.x * (-sinf(r.b)) + v.y * (cosf(r.b) * sinf(r.c)) + v.z * (cosf(r.b) * cosf(r.c));
+}
+
+void calc_uv(Context *ctx, vec3 point, rot3 rot, char ch) {
+    const float x = calc_x(point, rot);
+    const float y = calc_y(point, rot);
+    const float z = calc_z(point, rot) + ctx->distance;
+    const float ooz = 1.0 / z;
+    const int col = (int)roundf(ctx->width / 2.0 + ctx->K1 * ooz * x * ctx->char_width);
+    const int row = (int)roundf(ctx->height / 2.0 + ctx->K1 * ooz * y * ctx->char_height);
+    const int k = col + row * ctx->width;
+    if (k >= 0 && k < ctx->width * ctx->height) {
+        if (ooz > ctx->z_buffer[k]) {
+            ctx->z_buffer[k] = ooz;
+            ctx->buffer[k] = ch;
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {

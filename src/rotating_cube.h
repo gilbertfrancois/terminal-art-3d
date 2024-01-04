@@ -73,12 +73,41 @@ void teardown(void);
  */
 void get_terminal_size(int *rows, int *cols);
 
+/**
+ * Compute the x position of the element in world coordinates.
+ *
+ * \param v position vector in cube coordinates.
+ * \param r rotation vector in world coordinates.
+ * \returns z position
+ */
 float calc_x(vec3 v, rot3 r);
 
+/**
+ * Compute the y position of the element in world coordinates.
+ *
+ * \param v position vector in cube coordinates.
+ * \param r rotation vector in world coordinates.
+ * \returns z position
+ */
 float calc_y(vec3 v, rot3 r);
 
+/**
+ * Compute the z position of the element in world coordinates.
+ *
+ * \param v position vector in cube coordinates.
+ * \param r rotation vector in world coordinates.
+ * \returns z position
+ */
 float calc_z(vec3 v, rot3 r);
 
-void calculate_surface(Context *ctx, vec3 point, rot3 rot, char ch);
+/**
+ * Compute the location of a surface element of the cube in the projection plane.
+ *
+ * \param ctx The context
+ * \param point Element location in cube coordinates.
+ * \param rot Rotation vector of the cube in world coordinates.
+ * \param ch Character to render the surface element.
+ */
+void calc_uv(Context *ctx, vec3 point, rot3 rot, char ch);
 
 #endif /* ROTATING_CUBE_H */
