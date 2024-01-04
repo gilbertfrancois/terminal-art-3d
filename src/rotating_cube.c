@@ -40,12 +40,12 @@ void update(Context *ctx) {
     memset(ctx->z_buffer, 0, ctx->width * ctx->height * sizeof(float));
     for (float cube_x = -ctx->cube_size; cube_x < ctx->cube_size; cube_x += ctx->inc) {
         for (float cube_y = -ctx->cube_size; cube_y < ctx->cube_size; cube_y += ctx->inc) {
-            calc_uv(ctx, (vec3){cube_x, cube_y, -ctx->cube_size}, ctx->rot, '@');
-            calc_uv(ctx, (vec3){cube_x, cube_y, ctx->cube_size}, ctx->rot, '#');
-            calc_uv(ctx, (vec3){ctx->cube_size, cube_y, cube_x}, ctx->rot, 'X');
-            calc_uv(ctx, (vec3){-ctx->cube_size, cube_y, cube_x}, ctx->rot, '~');
-            calc_uv(ctx, (vec3){cube_x, -ctx->cube_size, cube_y}, ctx->rot, ';');
-            calc_uv(ctx, (vec3){cube_x, ctx->cube_size, cube_y}, ctx->rot, '+');
+            calc_projection(ctx, (vec3){cube_x, cube_y, -ctx->cube_size}, ctx->rot, '@');
+            calc_projection(ctx, (vec3){cube_x, cube_y, ctx->cube_size}, ctx->rot, '#');
+            calc_projection(ctx, (vec3){ctx->cube_size, cube_y, cube_x}, ctx->rot, '|');
+            calc_projection(ctx, (vec3){-ctx->cube_size, cube_y, cube_x}, ctx->rot, '-');
+            calc_projection(ctx, (vec3){cube_x, -ctx->cube_size, cube_y}, ctx->rot, 'x');
+            calc_projection(ctx, (vec3){cube_x, ctx->cube_size, cube_y}, ctx->rot, '+');
         }
     }
     ctx->rot.a += 0.008;
@@ -92,7 +92,7 @@ float calc_z(vec3 v, rot3 r) {
     return v.x * (-sinf(r.b)) + v.y * (cosf(r.b) * sinf(r.c)) + v.z * (cosf(r.b) * cosf(r.c));
 }
 
-void calc_uv(Context *ctx, vec3 point, rot3 rot, char ch) {
+void calc_projection(Context *ctx, vec3 point, rot3 rot, char ch) {
     const float x = calc_x(point, rot);
     const float y = calc_y(point, rot);
     const float z = calc_z(point, rot) + ctx->distance;

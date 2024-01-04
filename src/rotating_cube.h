@@ -108,6 +108,6 @@ float calc_z(vec3 v, rot3 r);
  * \param rot Rotation vector of the cube in world coordinates.
  * \param ch Character to render the surface element.
  */
-void calc_uv(Context *ctx, vec3 point, rot3 rot, char ch);
+void calc_projection(Context *ctx, vec3 point, rot3 rot, char ch);
 
 #endif /* ROTATING_CUBE_H */
