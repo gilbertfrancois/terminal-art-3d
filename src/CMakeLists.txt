@@ -1,4 +1,5 @@
 add_executable(rotating_cube rotating_cube.c gfutils.c)
+target_link_libraries(rotating_cube m)
 
 add_compile_options(-Wall -Werror -pedantic)
 

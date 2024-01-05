@@ -1,10 +1,15 @@
+/*  This value also causes C95 (since glibc 2.12) and C99 (since  glibc  2.10)  features  to  be  exposed
+    (in  other  words,  the  equivalent  of  defining _ISOC99_SOURCE). It is needed for gcc to expose 
+    timespec struct and nanosleep. */
+/* #define _POSIX_C_SOURCE 199309L */
+
 #if defined(_WIN32)
 #include <Windows.h>
 #else
 #include <sys/ioctl.h>
-#include <time.h>
 #include <unistd.h>
 #endif
+#include <time.h>
 #include "gfutils.h"
 
 void get_terminal_size(int *rows, int *cols) {

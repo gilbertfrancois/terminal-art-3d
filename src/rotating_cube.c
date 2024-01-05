@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 199309L
+
 #include "rotating_cube.h"
 #include "gfutils.h"
 #include <math.h>
